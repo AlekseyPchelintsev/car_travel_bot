@@ -1,5 +1,6 @@
 .DS_Store
 .venv/
+venv/
 __init__.py
 __pycache__/
 config.py

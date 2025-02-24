@@ -5,6 +5,9 @@ from config import TOKEN
 from src.db.models import create_tables
 # handlers
 from src.handlers.start_point import router as command_start_router
+from src.handlers.search_cities_handlers import router as search_cities_router
+from src.handlers.search_settings import router as search_settings_router
+from src.handlers.my_routes import router as my_routes_router
 
 
 storage = MemoryStorage()
@@ -18,6 +21,9 @@ async def main():
 
     # handlers
     dp.include_router(command_start_router)
+    dp.include_router(search_cities_router)
+    dp.include_router(search_settings_router)
+    dp.include_router(my_routes_router)
 
     try:
         await dp.start_polling(bot, timeout=50)

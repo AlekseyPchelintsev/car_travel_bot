@@ -7,7 +7,7 @@ def get_city_details(city_id):
         with conn:
             with conn.cursor() as cursor:
                 cursor.execute("""
-                    SELECT name, region, latitude, longitude, population
+                    SELECT name, latitude, longitude, population
                     FROM cities
                     WHERE id = %s
                 """, (city_id,))

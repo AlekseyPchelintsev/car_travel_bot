@@ -8,8 +8,8 @@ def get_user_location(user_tg_id):
             with conn.cursor(cursor_factory=RealDictCursor) as cursor:
                 cursor.execute("""
                     SELECT 
-                        ST_Y(last_location::geometry) AS latitude, -- Извлечение широты
-                        ST_X(last_location::geometry) AS longitude -- Извлечение долготы
+                        ST_X(ST_AsText(last_location)) AS longitude, -- Долгота
+                        ST_Y(ST_AsText(last_location)) AS latitude  -- Широта
                     FROM users
                     WHERE user_tg_id = %s
                 """, (user_tg_id,))
@@ -21,3 +21,4 @@ def get_user_location(user_tg_id):
                     return None
     finally:
         conn.close()
+
