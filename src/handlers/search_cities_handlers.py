@@ -10,7 +10,7 @@ from src.db.get_city_details import get_city_details
 from src.db.search_cities import get_cities_nearby_with_preferences
 from src.db.get_user_location import get_user_location
 import src.modules.keyboards as kb
-from config import search_img, city_info
+from config import search_img, city_info, my_routes_img
 
 
 router = Router()
@@ -59,19 +59,23 @@ async def return_to_cities_list(callback: CallbackQuery, state: FSMContext):
     user_tg_id = callback.from_user.id
     user_location = get_user_location(user_tg_id)
     user_latitude, user_longitude = user_location
-
+    picture = search_img
+    
     # Извлекаем данные из состояния
     data = await state.get_data()
     current_section = data.get("current_section", "search")  # По умолчанию общий поиск
     build_location = ''
 
     if current_section == 'search':
+        picture = search_img
         cities = await asyncio.to_thread(get_cities_nearby_with_preferences, user_tg_id, user_longitude, user_latitude)
     elif current_section == 'visited':
+        picture = my_routes_img
         empty_list = 1
         cities = await asyncio.to_thread(get_visited_cities, user_tg_id, user_longitude, user_latitude)
         build_location = 'my_routes'
     elif current_section == 'bookmarked':
+        picture = my_routes_img
         empty_list = 2
         cities = await asyncio.to_thread(get_bookmarked_cities, user_tg_id, user_longitude, user_latitude)
         build_location = 'my_routes'
@@ -97,7 +101,7 @@ async def return_to_cities_list(callback: CallbackQuery, state: FSMContext):
         '''
         await callback.message.edit_media(
             media=InputMediaPhoto(
-                media=search_img,
+                media=picture,
                 caption='<b>Мои маршруты:</b>',
                 parse_mode='HTML'
             ),
@@ -114,12 +118,12 @@ async def return_to_cities_list(callback: CallbackQuery, state: FSMContext):
 
     header_text = section_headers.get(current_section, "Найденные локации:")
         
-
+    
     # Генерируем клавиатуру
     keyboard = kb.generate_cities_keyboard_with_status(cities, page=page, build_location=build_location)
     await callback.message.edit_media(
         media=InputMediaPhoto(
-            media=search_img,
+            media=picture,
         caption=header_text,
         parse_mode="HTML"
         ),
