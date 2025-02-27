@@ -85,8 +85,8 @@ async def handle_location(message: Message, bot: Bot, state: FSMContext):
 
 # ПОЛУЧЕНИЕ id ИЗОБРАЖЕНИЙ
 
-@router.message(F.photo)
-async def get_photo_id(message: Message):
-    # Получаем ID фото
-    photo_id = message.photo[-1].file_id  # Получаем ID самого высокого качества
-    await message.answer(text=f'ID фото: {photo_id}')
+# @router.message(F.photo)
+# async def get_photo_id(message: Message):
+#     # Получаем ID фото
+#     photo_id = message.photo[-1].file_id  # Получаем ID самого высокого качества
+#     await message.answer(text=f'ID фото: {photo_id}')
