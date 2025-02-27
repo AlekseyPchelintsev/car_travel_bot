@@ -1,5 +1,5 @@
 import asyncio
-from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
+from aiogram.types import Message, CallbackQuery, InputMediaPhoto
 from aiogram import F, Router, Bot
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
@@ -10,7 +10,7 @@ from src.db.get_city_details import get_city_details
 from src.db.search_cities import get_cities_nearby_with_preferences
 from src.db.get_user_location import get_user_location
 import src.modules.keyboards as kb
-from config import search_img
+from config import search_img, city_info
 
 
 router = Router()
@@ -95,9 +95,12 @@ async def return_to_cities_list(callback: CallbackQuery, state: FSMContext):
         if empty_list == 3:
             await callback.answer(text='Список скрытых локаций пуст', show_alert=True)
         '''
-        await callback.message.edit_reply_markup(
-            caption='<b>Мои маршруты:</b>',
-            parse_mode='HTML',
+        await callback.message.edit_media(
+            media=InputMediaPhoto(
+                media=search_img,
+                caption='<b>Мои маршруты:</b>',
+                parse_mode='HTML'
+            ),
             reply_markup=kb.my_routes
         )
         return
@@ -114,10 +117,14 @@ async def return_to_cities_list(callback: CallbackQuery, state: FSMContext):
 
     # Генерируем клавиатуру
     keyboard = kb.generate_cities_keyboard_with_status(cities, page=page, build_location=build_location)
-    await callback.message.edit_caption(
+    await callback.message.edit_media(
+        media=InputMediaPhoto(
+            media=search_img,
         caption=header_text,
-        reply_markup=keyboard,
         parse_mode="HTML"
+        ),
+        reply_markup=keyboard,
+        
     )
 
 
@@ -180,9 +187,12 @@ async def show_city_details(callback: CallbackQuery, state: FSMContext):
         )
 
         # Обновляем сообщение с карточкой города
-        await callback.message.edit_caption(
+        await callback.message.edit_media(
+            media=InputMediaPhoto(
+                media=city_info,
             caption=response,
-            parse_mode='HTML',
+            parse_mode='HTML'
+            ),
             reply_markup=kb.back_to_cities_list(latitude, longitude, city_status, current_section=current_section)
         )
 
@@ -217,6 +227,13 @@ async def add_to_visited(callback: CallbackQuery, state: FSMContext):
     is_visited = await asyncio.to_thread(is_city_visited, user_tg_id, city_id)
     visited_list = await asyncio.to_thread(get_visited_cities, user_tg_id, user_longitude, user_latitude)
 
+    city_details = await asyncio.to_thread(get_city_details, city_id)
+    if not city_details:
+        await callback.answer("Информация о локации не найдена.")
+        return
+    
+    city_name, latitude, longitude, population = city_details
+
     # Если город удаляется из посещенных и пользователь находится в разделе "Посещенные"
     if not is_visited and current_section == 'visited':
 
@@ -248,7 +265,7 @@ async def add_to_visited(callback: CallbackQuery, state: FSMContext):
     # Обновляем клавиатуру
     await callback.message.edit_reply_markup(
         reply_markup=kb.back_to_cities_list(
-            user_latitude, user_longitude, city_status, current_section=current_section
+            latitude, longitude, city_status, current_section=current_section
         )
     )
 
@@ -270,6 +287,13 @@ async def add_to_bookmarks(callback: CallbackQuery, state: FSMContext):
         return
 
     user_latitude, user_longitude = user_location
+
+    city_details = await asyncio.to_thread(get_city_details, city_id)
+    if not city_details:
+        await callback.answer("Информация о локации не найдена.")
+        return
+    
+    city_name, latitude, longitude, population = city_details
 
     # Переключаем статус в БД
     await asyncio.to_thread(toggle_bookmarks_db, user_tg_id, city_id)
@@ -304,7 +328,7 @@ async def add_to_bookmarks(callback: CallbackQuery, state: FSMContext):
     await state.update_data(city_status=city_status)
 
     # Обновляем клавиатуру
-    await callback.message.edit_reply_markup(reply_markup=kb.back_to_cities_list(user_latitude, user_longitude, city_status, current_section=current_section))
+    await callback.message.edit_reply_markup(reply_markup=kb.back_to_cities_list(latitude, longitude, city_status, current_section=current_section))
 
 
 '''

@@ -18,13 +18,6 @@ router = Router()
 @router.message(F.text == '🧭 Мои маршруты')
 async def my_routes_menu(message: Message):
 
-  try:
-    await message.edit_caption(
-        caption='<b>Мои маршруты:</b>',
-        parse_mode='HTML',
-        reply_markup=kb.my_routes
-    )
-  except:
     await message.answer_photo(
         photo= my_routes_img,
         caption='<b>Мои маршруты:</b>',

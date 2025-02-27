@@ -4,7 +4,7 @@ from aiogram.types import (InlineKeyboardMarkup,
                            KeyboardButton)
 
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
+import urllib.parse
 
 
 geoposition = ReplyKeyboardMarkup(
@@ -162,40 +162,20 @@ def back_to_cities_list(latitude, longitude, city_status, return_callback="retur
                 ]
             )
 
-        '''
-    elif current_section == 'hidden':
-
-        if not city_status.get("hidden"):
-
-            keyboard = InlineKeyboardMarkup(
-            inline_keyboard=[
-                [InlineKeyboardButton(
-                    text="🚘 Открыть в Яндекс.Картах",
-                    url=f"https://yandex.ru/maps/?rtext=~{latitude},{longitude}&rtt=auto"
-                )],
-                [InlineKeyboardButton(text="↩️ К списку городов", callback_data=return_callback)]
-            ]
-        )
-            
-        else:
-
-            keyboard = InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [InlineKeyboardButton(
-                        text="🚘 Открыть в Яндекс.Картах",
-                        url=f"https://yandex.ru/maps/?rtext=~{latitude},{longitude}&rtt=auto"
-                    )],
-                    [InlineKeyboardButton(text='Вернуть в поиск', callback_data='to_hide')],
-                    [InlineKeyboardButton(text="↩️ К списку городов", callback_data=return_callback)]
-                ]
-            )
-        '''
     else:
+
+        text = f"Посмотри маршрут: https://yandex.ru/maps/?rtext=~{latitude},{longitude}&rtt=auto"
+        encoded_text = urllib.parse.quote(text, safe='')
+
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
                 [InlineKeyboardButton(
                     text="🚘 Открыть в Яндекс.Картах",
                     url=f"https://yandex.ru/maps/?rtext=~{latitude},{longitude}&rtt=auto"
+                )],
+                [InlineKeyboardButton(
+                    text="📤 Поделиться",
+                    url=f"tg://resolve?domain=share&text={encoded_text}"
                 )],
                 [InlineKeyboardButton(
                     text="✅ Посещено" if city_status.get("visited") else "● Посещено",
@@ -205,11 +185,6 @@ def back_to_cities_list(latitude, longitude, city_status, return_callback="retur
                     text="📌 В закладках" if city_status.get("bookmarked") else "● В закладки",
                     callback_data="to_bookmarks"
                 )],
-                
-                #[InlineKeyboardButton(
-                #    text="🚫 Вернуть в поиск" if city_status.get("hidden") else "● Скрыть",
-                #    callback_data="to_hide"
-                #)],
                 
                 [InlineKeyboardButton(text="↩️ К списку городов", callback_data=return_callback)],
             ]
